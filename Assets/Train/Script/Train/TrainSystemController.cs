@@ -29,7 +29,7 @@ public class TrainSystemController : MonoBehaviour
     //每个节点与上个节点的距离
     public List<int> trainNodesBias;
     //车的历史路径
-    public List<RailPathController> AttachedRail => trainNodes .Select(node=>node.currentRailPath).Distinct().ToList();
+    public List<RailController> AttachedRail => trainNodes.Select(node => node.currentRailPath).Distinct().ToList();
     public void Start()
     {
         //初始化车厢
@@ -79,5 +79,5 @@ public class TrainSystemController : MonoBehaviour
             selectBranch = "M";
         }
     }
-    
+
 }

@@ -51,8 +51,6 @@ namespace TouhouMachineLearningSummary.Extension
         public static Color SetA(this Color color, float a) => new Color(color.r, color.g, color.b, a);
         public static List<int> EnumToOneHot<T>(this T targetEnum) => Enumerable.Range(0, Enum.GetNames(typeof(T)).Length).SelectList(index => index == (int)(object)targetEnum ? 1 : 0);
         public static TEnum OneHotToEnum<TEnum>(this List<int> targetEnum) => (TEnum)(object)targetEnum.IndexOf(1);
-
-
         public static List<TResult> SelectList<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             List<TResult> result = new List<TResult>(source.Count());

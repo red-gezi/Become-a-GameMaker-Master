@@ -19,12 +19,12 @@ public class TrainNodeController : MonoBehaviour
     public float rotationDamping = 50f; // 旋转阻尼，值越大旋转越平滑
     [Header("当前铁轨与目标点")]
     //当前所在铁轨
-    public RailPathController currentRailPath;
+    public RailController currentRailPath;
     //当前索引点
     public int currentNodeIndex;
     [Header("下一个移动目标的铁轨与目标点")]
     //当前所在铁轨
-    public RailPathController nextRailPath;
+    public RailController nextRailPath;
     //当前索引点
     public int nextNodeIndex;
 
@@ -32,10 +32,10 @@ public class TrainNodeController : MonoBehaviour
     //行驶方向
     public Vector3 drivingDirection => isForward ? Vector3.forward : Vector3.back;
     //查找下一个点
-    public (RailPathController, int) FindNextRailAndPoint(bool isMoveReverse, string direction)
+    public (RailController, int) FindNextRailAndPoint(bool isMoveReverse, string direction)
     {
 
-        RailPathController targetRail = currentRailPath;
+        RailController targetRail = currentRailPath;
        int targetNodeIndex = currentNodeIndex;
         //根据铁轨同向还是反向，以及当前的移动方向，判断是朝正索引方向移动还是负索引方向移动
         bool isSameDirection = Vector3.Dot(transform.forward, currentRailPath.Direction) > 0;
@@ -47,20 +47,20 @@ public class TrainNodeController : MonoBehaviour
         {
             targetNodeIndex--;
         }
-        Dictionary<string, RailPathController> forwardBranches = new()
+        Dictionary<string, RailController> forwardBranches = new()
             {
-                { "M", currentRailPath.FM_RailPath },
-                { "L", currentRailPath.FL_RailPath },
-                { "R", currentRailPath.FR_RailPath }
+                { "M", currentRailPath.connectRails[RailPutType.FM] },
+                { "L", currentRailPath.connectRails[RailPutType.FL] },
+                { "R", currentRailPath.connectRails[RailPutType.FR] }
             };
-        Dictionary<string, RailPathController> backwardBranches = new()
+        Dictionary<string, RailController> backwardBranches = new()
             {
-                { "M", currentRailPath.BM_RailPaths },
-                { "L", currentRailPath.BL_RailPath },
-                { "R", currentRailPath.BR_RailPath }
+                { "M", currentRailPath.connectRails[RailPutType.BM]},
+                { "L", currentRailPath.connectRails[RailPutType.BL]},
+                { "R", currentRailPath.connectRails[RailPutType.BR]}
             };
         //如果超出当前铁轨范围，需要切换铁轨，且为正方向时，向F集合寻找目标
-        if (targetNodeIndex > currentRailPath.pointsCount)
+        if (targetNodeIndex > currentRailPath.Points.Count)
         {
             //前进的话根据同向还是反向判定下一个铁轨，
             //后退的话
@@ -114,7 +114,7 @@ public class TrainNodeController : MonoBehaviour
             }
             else
             {
-                targetNodeIndex = targetRail.pointsCount - 1;
+                targetNodeIndex = targetRail.Points.Count - 1;
             }
         }
         if (targetNodeIndex < 0)
@@ -125,7 +125,7 @@ public class TrainNodeController : MonoBehaviour
 
         return (targetRail, targetNodeIndex);
 
-        RailPathController GetTargetBranch(Dictionary<string, RailPathController> branches)
+        RailController GetTargetBranch(Dictionary<string, RailController> branches)
         {
             // 尝试直接获取指定方向的分支
             if (direction == "M")

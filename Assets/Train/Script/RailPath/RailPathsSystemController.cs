@@ -1,26 +1,23 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TreeEditor;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class RailPathsSystemController : MonoBehaviour
 {
-    public List<RailPathController> railPathControllers = new List<RailPathController>();
+    public int pointsCount = 5; // 曲线上点的数量
     public GameObject LineRailPathPrefab;
     public GameObject CurveRailPathPrefab;
+    public List<RailController> railPathControllers = new List<RailController>();
     public static RailPathsSystemController Instance { get; set; }
     private void Awake() => Instance = this;
-    // Start is called before the first frame update
     //传入火车节点，找到最接近的铁路节点
     public void FindClostRailAndIndex(TrainNodeController trainNode)
     {
-
         var closestRailPath = railPathControllers
             .OrderBy(railPath => Vector3.Distance(railPath.transform.position, trainNode.transform.position))
             .FirstOrDefault();
-
         if (closestRailPath != null)
         {
             trainNode.currentRailPath = closestRailPath;
@@ -34,6 +31,77 @@ public class RailPathsSystemController : MonoBehaviour
             Debug.LogError("No rail path found within the collection.");
         }
     }
+    public List<RailController> FindRailByRailIndex(RailIndex index) =>
+        railPathControllers
+        .Where(rail => rail.Index== index)
+        .ToList();
+    public void CreatRail(RailController currentRail, RailPutType railPutType)
+    {
+        //铁道系统判断该出能否放置铁轨（禁止重复或者交叉）
+        bool canPlaceRail = true;
+        if (currentRail.connectRails[railPutType] != null)
+        {
+            canPlaceRail = false;
+        }
+        if (!canPlaceRail)
+        {
+            return;
+        }
+        //实际生成铁轨
+        GameObject newRailModel = railPutType switch
+        {
+            RailPutType.FM or RailPutType.BM => Instantiate(Instance.LineRailPathPrefab, currentRail.transform.parent),
+            _ => Instantiate(Instance.CurveRailPathPrefab, currentRail.transform.parent),
+        };
+        //计算坐标
+        newRailModel.transform.position = railPutType switch
+        {
+            RailPutType.FL or RailPutType.FM or RailPutType.FR => currentRail.FPosition,
+            RailPutType.BL or RailPutType.BM or RailPutType.BR => currentRail.BPosition,
+            _ => throw new Exception("RailPutType Error"),
+        };
+        //计算角度
+        newRailModel.transform.eulerAngles = railPutType switch
+        {
+            RailPutType.FL => currentRail.transform.eulerAngles + (currentRail.isCurve ? new Vector3(0, -90, 0) : Vector3.zero),
+            RailPutType.FM => currentRail.transform.eulerAngles + (currentRail.isCurve ? new Vector3(0, -90, 0) : Vector3.zero),
+            RailPutType.FR => currentRail.transform.eulerAngles - new Vector3(0, 90, 0) + (currentRail.isCurve ? new Vector3(0, -90, 0) : Vector3.zero),
+            RailPutType.BL => currentRail.transform.eulerAngles + new Vector3(0, 90, 0),
+            RailPutType.BM => currentRail.transform.eulerAngles,
+            RailPutType.BR => currentRail.transform.eulerAngles + new Vector3(0, 180, 0),
+            _ => throw new Exception("RailPutType Error"),
+        };
+        RailController newRail = newRailModel.GetComponent<RailController>();
+        //配置铁轨参数
+        newRail.Index = railPutType switch
+        {
+            RailPutType.FL => currentRail.FIndex,
+            RailPutType.FM => currentRail.FIndex,
+            RailPutType.FR => currentRail.FIndex,
+            RailPutType.BL => currentRail.BIndex,
+            RailPutType.BM => currentRail.BIndex,
+            RailPutType.BR => currentRail.BIndex,
+            RailPutType.None => new(0,0),
+            _ => throw new Exception("RailPutType Error"),
+        };
+        //currentRail.connectRails[railPutType] = newRail;
+        //currentRail.connectRails[railPutType].InitRailPath();
+        //添加进列表
+        railPathControllers.Add(newRail);
+        //检索新铁轨两侧是否存在铁轨，是的话互相建立链接
+        FindRailByRailIndex(newRail.FIndex).ForEach(rail => rail.AddConnectRail(newRail));
+        FindRailByRailIndex(newRail.BIndex).ForEach(rail => rail.AddConnectRail(newRail));
+    }
+    //移除一个铁轨
+    public void Remove(RailController currentRail)
+    {
+        //从铁路集合中移除
+        railPathControllers.Remove(currentRail);
+        //从相邻铁轨中移除（要改进）
+        railPathControllers.ForEach(rail => rail.RemoveConnectRail(currentRail));
+        //销毁物体
+        Destroy(currentRail.gameObject);
+    }
     //保存铁轨数据
     public void Save()
     {
@@ -44,11 +112,33 @@ public class RailPathsSystemController : MonoBehaviour
     {
 
     }
-    //重新检查链接关系
-    public void ReConnectRail()
+    private void Start()
     {
 
     }
-
-    
+    private void OnDrawGizmos()
+    {
+        
+    }
+    //绘制范围
+    private void Update()
+    {
+        int bias = 1;
+        int maxX = railPathControllers.Max(rail => rail.Index.X) + 1 + bias;
+        int minX = railPathControllers.Min(rail => rail.Index.X) - bias;
+        int maxZ = railPathControllers.Max(rail => rail.Index.Y) + 1 + bias;
+        int minZ = railPathControllers.Min(rail => rail.Index.Y) - bias;
+        for (int x = minX; x <= maxX; x++)
+        {
+            Vector3 start = new Vector3(x - 0.5f, 0.02f, minZ - 0.5f) * 20 + transform.position;
+            Vector3 end = new Vector3(x - 0.5f, 0.02f, maxZ - 0.5f) * 20 + transform.position;
+            Debug.DrawLine(start, end, Color.red);
+        }
+        for (int z = minZ; z <= maxZ; z++)
+        {
+            Vector3 start = new Vector3(minX - 0.5f, 0.02f, z - 0.5f) * 20 + transform.position;
+            Vector3 end = new Vector3(maxX - 0.5f, 0.02f, z - 0.5f) * 20 + transform.position;
+            Debug.DrawLine(start, end, Color.red);
+        }
+    }
 }
