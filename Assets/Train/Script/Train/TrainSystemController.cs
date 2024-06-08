@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
@@ -28,7 +29,7 @@ public class TrainSystemController : MonoBehaviour
     List<TrainNodeController> trainNodes = new();
     //每个节点与上个节点的距离
     public List<int> trainNodesBias;
-    //车的历史路径
+    //车的历史路径22666
     public List<RailController> AttachedRail => trainNodes.Select(node => node.currentRailPath).Distinct().ToList();
     public void Start()
     {
@@ -37,8 +38,18 @@ public class TrainSystemController : MonoBehaviour
         trainNodes.AddRange(trainCars);
         trainNodes.Add(trainTail);
         trainNodes.ForEach(node => node.trainSystemController = this);
+        //将列车起始点移动到最接近的铁轨上
+        var (startRail, startPoint) = currentRailPathsSystemController.FindClostRailAndIndex(trainHead);
+        transform.eulerAngles = startRail.transform.eulerAngles;
+        transform.position -= (trainHead.transform.position - startPoint);
+
         //定位每个车厢对应的铁道和锚点(加载存档或者自动检索),从铁路系统中找到每个车辆节点最接近的点
         trainNodes.ForEach(node => currentRailPathsSystemController.FindClostRailAndIndex(node));
+
+    }
+    public void InitTrain()
+    {
+
     }
     void Update()
     {
@@ -52,32 +63,42 @@ public class TrainSystemController : MonoBehaviour
     }
     public void OnKeyDown()
     {
+        if (Input.GetKey( KeyCode.LeftShift))
+        {
+            //短路
+            return;
+        }
         // 控制火车的移动状态
         if (Input.GetKeyDown(KeyCode.Space))
         {
             moveState = 0;
+            Debug.Log("0");
         }
         if (Input.GetKeyDown(KeyCode.W))
         {
             moveState = 1;
+            Debug.Log("1");
         }
         if (Input.GetKeyDown(KeyCode.S))
         {
             moveState = 2;
+            Debug.Log("2");
         }
 
         if (Input.GetKeyDown(KeyCode.A))
         {
             selectBranch = "L";
+            Debug.Log("L");
         }
-        else if (Input.GetKeyDown(KeyCode.R))
+        else if (Input.GetKeyDown(KeyCode.D))
         {
             selectBranch = "R";
+            Debug.Log("R");
         }
         else
         {
             selectBranch = "M";
+            Debug.Log("M");
         }
     }
-
 }

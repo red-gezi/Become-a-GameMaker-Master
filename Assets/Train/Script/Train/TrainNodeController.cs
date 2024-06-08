@@ -182,11 +182,11 @@ public class TrainNodeController : MonoBehaviour
             //}
             //currentRailIndex = (currentRailIndex + 1) % railPath.childCount;
             //targetPosition = railPath.GetChild(0).GetChild(currentRailIndex).position;
-            //moveDirection = (targetPosition - currentPosition).normalized;
+            moveDirection = (targetPosition - currentPosition).normalized;
         }
         // 让火车保持朝向路径的方向，增加插值效果以平滑旋转
-        //targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
-        //transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationDamping);
+        targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationDamping);
     }
     //后退
     public void Back()

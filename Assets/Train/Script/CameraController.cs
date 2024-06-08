@@ -9,14 +9,17 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 获取WASD键的输入
-        float horizontalInput = Input.GetAxis("Horizontal"); // 左右移动
-        float verticalInput = Input.GetAxis("Vertical"); // 前后移动
+        if(Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            // 获取WASD键的输入
+            float horizontalInput = Input.GetAxis("Horizontal"); // 左右移动
+            float verticalInput = Input.GetAxis("Vertical"); // 前后移动
 
-        // 根据输入计算新的位置
-        Vector3 newPosition = transform.position + new Vector3(horizontalInput, 0f, verticalInput) * moveSpeed * Time.deltaTime;
+            // 根据输入计算新的位置
+            Vector3 newPosition = transform.position + new Vector3(horizontalInput, 0f, verticalInput) * moveSpeed * Time.deltaTime;
 
-        // 设置摄像机的位置
-        transform.position = newPosition;
+            // 设置摄像机的位置
+            transform.position = newPosition;
+        }
     }
 }
