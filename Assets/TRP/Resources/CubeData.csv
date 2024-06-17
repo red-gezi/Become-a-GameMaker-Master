@@ -1,0 +1,5 @@
+Tag,Name-CH,Describe,Durability,type,CSE,DSE
+Portal,传送门,可以传送到固定地图，无法破坏,-1,0,,
+Sand,沙子,会下落,10,0,,
+Soil,泥土,新鲜的泥土，可以耕种,50,0,,
+StoneBrick,石砖,很硬哦,100,0,,

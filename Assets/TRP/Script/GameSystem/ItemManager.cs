@@ -1,21 +1,24 @@
-using System.Collections;
+using Sirenix.OdinInspector;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ItemManager : MonoBehaviour
 {
-    List<GameItem> gameItems = new List<GameItem>();
+
+
+    static List<int> ItemsIndex => SaveDataManager.CurrengSaveData.ItemIndexs;
+    static List<GameItem> showItems => ItemsIndex.Select(index => BagManager.BagItems[index]).ToList();
     public GameObject contentPrefab;
     public GameObject ItemPrefab;
     public static ItemManager Instance;
     public int selectItemIndex = 0;
-    public static GameItem SelectItem => Instance.gameItems[Instance.selectItemIndex];
-    private void Awake()
-    {
-        Instance = this;
-    }
+    public static GameItem SelectItem => BagManager.BagItems[ItemsIndex[Instance.selectItemIndex]];
+
+    private void Awake() => Instance = this;
+
     private void Update()
     {
         for (int i = 1; i <= 9; i++)
@@ -30,27 +33,29 @@ public class ItemManager : MonoBehaviour
     }
     public static void Init(List<GameItem> Items)
     {
+        //创造ui选项
         for (int i = 0; i < 8; i++)
         {
             Instantiate(Instance.ItemPrefab, Instance.contentPrefab.transform);
         }
-        Instance.gameItems = Items;
+        //刷新ui
         Refresh();
     }
+
     public static void Refresh()
     {
-        for (int i = 0; i < Instance.gameItems.Count; i++)
+        for (int i = 0; i < showItems.Count; i++)
         {
             var targetIcon = Instance.contentPrefab.transform.GetChild(i).GetChild(0).GetComponent<Image>();
             var targetcount = Instance.contentPrefab.transform.GetChild(i).GetChild(1).GetComponent<TextMeshProUGUI>();
             var targetName = Instance.contentPrefab.transform.GetChild(i).GetChild(2).GetComponent<TextMeshProUGUI>();
             var selectSign = Instance.contentPrefab.transform.GetChild(i).GetChild(3).gameObject;
 
-            if (Instance.gameItems[i] != null)
+            if (showItems[i] != null)
             {
-                targetIcon.sprite = BagManager.GetItemIcon(Instance.gameItems[i].itemIcon);
-                targetcount.text = Instance.gameItems[i].count.ToString();
-                targetName.text = Instance.gameItems[i].showName;
+                targetIcon.sprite = BagManager.GetItemIcon(showItems[i].ItemTag);
+                targetcount.text = showItems[i].count.ToString();
+                targetName.text = showItems[i].showName;
             }
             else
             {

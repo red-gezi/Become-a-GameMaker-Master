@@ -26,10 +26,10 @@ public class CharaManager : MonoBehaviour
         {
             rb.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
         }
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            GenerateBlockUnderFeet();
-        }
+        //if (Input.GetKeyDown(KeyCode.F))
+        //{
+        //    GenerateBlockUnderFeet();
+        //}
     }
     void GenerateBlockUnderFeet()
     {
