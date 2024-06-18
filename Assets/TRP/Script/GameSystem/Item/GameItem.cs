@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class GameItem
 {
-    public string ItemTag;
-    public ItemType itemType;
+    public CubeData cubeData;
+
+    public int ItemID => cubeData.ID;
+    public string ItemTag=> cubeData.Name_EN;
+    public ItemType itemType=> cubeData.ItemType;
     public int count;
-    public string showName;
-    public GameItem(string itemName ,int count)
+    public string showName=> cubeData.Name_CH;
+    public GameItem(int ItemID, int count)
     {
-        itemName = itemName;
+        var cubeData = CubeDataManager.GetCubeData(ItemID);
+        this.cubeData = cubeData;
         this.count = count;
-        itemType = ItemType.Cube;
-       
-        showName = "´«ËÍÃÅ";
     }
 }

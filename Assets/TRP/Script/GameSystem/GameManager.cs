@@ -17,27 +17,29 @@ public class GameManager : MonoBehaviour
     {
         Load(0);
     }
-
     private static void Init()
     {
         //UI初始化
-        //地图初始化
-        WorldManager.Init();
+        
         //背包初始化
         BagManager.Init();
         //快捷栏初始化
-        ItemManager.Init(new List<GameItem>()
-        {
-            new GameItem("Sand",18),
-            new GameItem("StoneBrick",18),
-            new GameItem("Soil",18),
-            new GameItem("Portal",18),
-            null,
-            null,
-            null,
-            null,
-            null,
-        });
+        ItemManager.Init();
+        //ItemManager.Init(new List<GameItem>()
+        //{
+        //    new GameItem(1,18),
+        //    new GameItem(2,18),
+        //    new GameItem(3,18),
+        //    new GameItem(4,18),
+        //    null,
+        //    null,
+        //    null,
+        //    null,
+        //    null,
+        //});
+        //地图初始化
+        WorldManager.Init();
+        //人物初始化
     }
     [Button("创造存档")]
     public void Save(int index)

@@ -17,20 +17,18 @@ public partial class WorldManager
         {
             public int x;
             public int y;
-            public int z;
-            public string itemTag;
+            public int itemID;
 
             public Cube(GameObject cubeObject)
             {
-                (x, y, z) = cubeObject.transform.position.ToInt3();
-                itemTag = cubeObject.GetComponent<GameCube>().itemTag;
+                (x, y, _) = cubeObject.transform.position.ToInt3();
+                itemID = cubeObject.GetComponent<GameCube>().CubeID;
             }
         }
         public class PortalCube
         {
             public int x;
             public int y;
-            public int z;
             public string portalTag;
         }
     }

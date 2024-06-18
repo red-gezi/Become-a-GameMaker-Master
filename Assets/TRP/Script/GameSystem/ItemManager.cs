@@ -10,12 +10,26 @@ public class ItemManager : MonoBehaviour
 
 
     static List<int> ItemsIndex => SaveDataManager.CurrengSaveData.ItemIndexs;
-    static List<GameItem> showItems => ItemsIndex.Select(index => BagManager.BagItems[index]).ToList();
+    //选中空物体时返回空气
+    static List<GameItem> showItems => 
+        ItemsIndex.Select(index =>index == -1 ? new GameItem(0, 1) : BagManager.BagItems[index]).ToList();
+
     public GameObject contentPrefab;
     public GameObject ItemPrefab;
     public static ItemManager Instance;
     public int selectItemIndex = 0;
-    public static GameItem SelectItem => BagManager.BagItems[ItemsIndex[Instance.selectItemIndex]];
+    //选中空物体时返回空气
+    public static GameItem SelectItem
+    {
+        get
+        {
+            if (ItemsIndex[Instance.selectItemIndex] == -1)
+            {
+                return new GameItem(0, 1);
+            }
+            return BagManager.BagItems[ItemsIndex[Instance.selectItemIndex]];
+        }
+    }
 
     private void Awake() => Instance = this;
 
@@ -31,7 +45,7 @@ public class ItemManager : MonoBehaviour
             }
         }
     }
-    public static void Init(List<GameItem> Items)
+    public static void Init()
     {
         //创造ui选项
         for (int i = 0; i < 8; i++)

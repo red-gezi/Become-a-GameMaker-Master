@@ -3,6 +3,7 @@ using UnityEditor;
 
 class EditorManager
 {
+#if UNITY_EDITOR
     [MenuItem("TRP/开发说明文档", false, 0)]
     public static void OpenDevelopCsv()
     {
@@ -23,4 +24,5 @@ class EditorManager
         //更新物体缩略图
         CubeDataManager.UpdatePrefabsTexture();
     }
+#endif
 }

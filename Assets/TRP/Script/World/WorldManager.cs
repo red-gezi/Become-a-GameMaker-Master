@@ -17,37 +17,102 @@ public partial class WorldManager : MonoBehaviour
     public List<PortalCube> portalList = new();
     public GameObject mapObject;
     public static WorldManager Instance { get; set; }
+    public static PlayerMode CurrentPlayerMode { get; set; } = PlayerMode.Build;
+    ////////////////////////////////////////建造标记////////////////////////////////////////////////////
+    public static bool IsFirstClick { get; set; } = true;
+    public static Vector3 FirstClickPoint { get; set; }
+    public static Vector3 SecondClickPoint { get; set; }
+
+
     // Start is called before the first frame update
     private void Awake() => Instance = this;
     public static void Init()
     {
         LoadCubePrefabs();
-        FillCubes(new GameItem("Sand",1), new Vector3(-100, -20), new Vector3(-20, 0));
+        FillCubes(new GameItem(2, 1), new Vector3(-100, -20), new Vector3(100, 0));
     }
     private void Update()
     {
+        //填充模式
+        if (Input.GetKeyDown(KeyCode.B) && Input.GetKey(KeyCode.LeftControl))
+        {
+            CurrentPlayerMode = PlayerMode.Fill;
+            Debug.LogWarning("启动填充模式");
+        }
+        //复制模式
+        if (Input.GetKeyDown(KeyCode.C) && Input.GetKey(KeyCode.LeftControl))
+        {
+            CurrentPlayerMode = PlayerMode.Copy;
+            Debug.LogWarning("启动复制模式");
+        }
+        //粘贴模式
+        if (Input.GetKeyDown(KeyCode.V) && Input.GetKey(KeyCode.LeftControl))
+        {
+            //根据复制的数据显示范围
+            CurrentPlayerMode = PlayerMode.Paste;
+            Debug.LogWarning("启动粘贴模式");
+        }
         if (Input.GetMouseButtonDown(0))
         {
-            switch (ItemManager.SelectItem.itemType)
+            switch (CurrentPlayerMode)
             {
-                case ItemType.Cube:
+                case PlayerMode.UseCard:
+                    //触发技能组
+                    break;
+                case PlayerMode.UseBluePrint:
+                    //生成虚影
+                    break;
+                case PlayerMode.Build:
+                    //点击后直接放置
                     Use();
                     break;
-                case ItemType.Wall:
-                    Use();
+                case PlayerMode.Fill:
+                    if (IsFirstClick)
+                    {
+                        FirstClickPoint = SetCubeManager.setPos;
+                    }
+                    else
+                    {
+                        SecondClickPoint = SetCubeManager.setPos;
+                    }
+                    FillCubes(ItemManager.SelectItem, FirstClickPoint, SecondClickPoint);
+                    CurrentPlayerMode = PlayerMode.Build;
                     break;
-                case ItemType.Attachment:
-                    Use();
+                case PlayerMode.Copy:
+                    if (IsFirstClick)
+                    {
+                        FirstClickPoint = SetCubeManager.setPos;
+                    }
+                    else
+                    {
+                        SecondClickPoint = SetCubeManager.setPos;
+                    }
+                    CopyCubes(ItemManager.SelectItem, FirstClickPoint, SecondClickPoint);
+                    CurrentPlayerMode = PlayerMode.Build;
                     break;
-                case ItemType.Blueprint:
-                    Use();
+                case PlayerMode.Paste:
+                    //从记录粘贴到游戏中
+                    PasteCubes(ItemManager.SelectItem, SetCubeManager.setPos);
+                    CurrentPlayerMode = PlayerMode.Build;
+                    break;
+                default:
                     break;
             }
         }
         if (Input.GetMouseButtonDown(1))
         {
-            Destory();
+            switch (CurrentPlayerMode)
+            {
+                case PlayerMode.UseCard:
+                    //触发技能组
+                    break;
+                default:
+                    //触发默认采集组
+                    Destory();
+                    break;
+            }
         }
+
     }
     static void LoadCubePrefabs()
     {
@@ -57,32 +122,37 @@ public partial class WorldManager : MonoBehaviour
     }
     public void Use()
     {
+        //已有将排除
         if (worldCubes.FirstOrDefault(cube => cube.transform.position == SetCubeManager.setPos) != null)
         {
             return;
         }
+        //背包打开后将关闭放置交互
         if (BagManager.IsOpen)
         {
             return;
         }
         CreatCube(ItemManager.SelectItem, SetCubeManager.setPos);
     }
-    public static void CreatCube(GameItem gameItem,Vector3 pos)
+    public static void CreatCube(GameItem gameItem, Vector3 pos)
     {
+        //根据方块的标签数据判断对应的预制体
         var tragetPrefab = cubePrefabs.FirstOrDefault(cube => cube.name == gameItem.ItemTag);
+        //根据物体类型进行判断
+
         var cube = Instantiate(tragetPrefab);
         var cubemanager = cube.AddComponent<GameCube>();
-        cubemanager.itemTag = gameItem.ItemTag;
+        cubemanager.cubeData = gameItem.cubeData;
         cube.transform.position = pos;
         Instance.worldCubes.Add(cube);
     }
-    public static void FillCubes(GameItem gameItem, Vector3 startPos , Vector3 endPos)
+    public static void FillCubes(GameItem gameItem, Vector3 startPos, Vector3 endPos)
     {
         for (int i = (int)Mathf.Min(startPos.x, endPos.x); i < (int)Mathf.Max(startPos.x, endPos.x); i++)
         {
             for (int j = (int)Mathf.Min(startPos.y, endPos.y); j < (int)Mathf.Max(startPos.y, endPos.y); j++)
             {
-                var item = ItemManager.SelectItem;
+                var item = gameItem;
                 CreatCube(item, new Vector3(i, j, 0));
             }
         }
@@ -98,16 +168,16 @@ public partial class WorldManager : MonoBehaviour
             }
         }
     }
-    public static void PasteCubes(GameItem gameItem, Vector3 startPos, Vector3 endPos)
+    public static void PasteCubes(GameItem gameItem, Vector3 startPos)
     {
-        for (int i = (int)Mathf.Min(startPos.x, endPos.x); i < (int)Mathf.Max(startPos.x, endPos.x); i++)
-        {
-            for (int j = (int)Mathf.Min(startPos.y, endPos.y); j < (int)Mathf.Max(startPos.y, endPos.y); j++)
-            {
-                //var item = new StoneBrick(1);
-                //CreatCube(item, new Vector3(i, j, 0));
-            }
-        }
+        //for (int i = (int)Mathf.Min(startPos.x, endPos.x); i < (int)Mathf.Max(startPos.x, endPos.x); i++)
+        //{
+        //    for (int j = (int)Mathf.Min(startPos.y, endPos.y); j < (int)Mathf.Max(startPos.y, endPos.y); j++)
+        //    {
+        //        //var item = new StoneBrick(1);
+        //        //CreatCube(item, new Vector3(i, j, 0));
+        //    }
+        //}
     }
     public void Destory()
     {

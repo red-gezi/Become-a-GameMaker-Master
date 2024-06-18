@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GameCube : MonoBehaviour
 {
-    public string itemTag;
-    CubeData cubeData;
+    public int CubeID=> cubeData.ID;
+    public CubeData cubeData;
+    //一些方块的独特操作
 }

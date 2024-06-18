@@ -11,7 +11,7 @@ public class SaveData
     //背包数据
     //电路卡牌数据
     //蓝图数据
-    public List<int> ItemIndexs { get; set; } = new();
+    public List<int> ItemIndexs { get; set; } = new() { -1,-1,-1,-1,-1,-1,-1,-1,-1};
     //位置数据
     //存档时间数据
     public DateTime SaveTime { get; set; } = new();
