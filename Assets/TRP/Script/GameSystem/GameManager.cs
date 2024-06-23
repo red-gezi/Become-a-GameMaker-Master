@@ -8,48 +8,43 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using XCharts.Runtime;
-
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
-        Load(0);
+        Creat();
+        //Load(0);
     }
+    //初始化游戏
     private static void Init()
     {
-        //UI初始化
-        
+        //方块数据加载
+        CubeDataManager.Init();
         //背包初始化
         BagManager.Init();
         //快捷栏初始化
-        ItemManager.Init();
-        //ItemManager.Init(new List<GameItem>()
-        //{
-        //    new GameItem(1,18),
-        //    new GameItem(2,18),
-        //    new GameItem(3,18),
-        //    new GameItem(4,18),
-        //    null,
-        //    null,
-        //    null,
-        //    null,
-        //    null,
-        //});
+        QuickItemManager.Init();
         //地图初始化
         WorldManager.Init();
         //人物初始化
+        //摄像机初始化
+        //UI初始化
     }
-    [Button("创造存档")]
+    [Button("新建存档")]
+    public void Creat()
+    {
+        SaveDataManager.CreatNewData();
+        GameManager.Init();
+    }
+    [Button("储存存档")]
     public void Save(int index)
     {
         SaveDataManager.Save(index);
     }
+    [Button("加载存档")]
     public void Load(int index)
     {
         SaveDataManager.Load(index);
-        Init();
-        //初始化游戏
+        GameManager.Init();
     }
 }

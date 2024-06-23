@@ -18,7 +18,7 @@ class EditorManager
     public static void UpdatePrefab()
     {
         //载入预制体数据
-        CubeDataManager.LoadCubeData();
+        CubeDataManager.Init();
         //按类型生成预制体
         CubeDataManager.CreatNewPrefab();
         //更新物体缩略图

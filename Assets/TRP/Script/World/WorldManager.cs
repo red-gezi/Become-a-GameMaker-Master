@@ -29,7 +29,7 @@ public partial class WorldManager : MonoBehaviour
     public static void Init()
     {
         LoadCubePrefabs();
-        FillCubes(new GameItem(2, 1), new Vector3(-100, -20), new Vector3(100, 0));
+        FillCubes(new ItemData(2, 1), new Vector3(-100, -20), new Vector3(100, 0));
     }
     private void Update()
     {
@@ -75,7 +75,7 @@ public partial class WorldManager : MonoBehaviour
                     {
                         SecondClickPoint = SetCubeManager.setPos;
                     }
-                    FillCubes(ItemManager.SelectItem, FirstClickPoint, SecondClickPoint);
+                    FillCubes(QuickItemManager.SelectItem, FirstClickPoint, SecondClickPoint);
                     CurrentPlayerMode = PlayerMode.Build;
                     break;
                 case PlayerMode.Copy:
@@ -87,12 +87,12 @@ public partial class WorldManager : MonoBehaviour
                     {
                         SecondClickPoint = SetCubeManager.setPos;
                     }
-                    CopyCubes(ItemManager.SelectItem, FirstClickPoint, SecondClickPoint);
+                    CopyCubes(QuickItemManager.SelectItem, FirstClickPoint, SecondClickPoint);
                     CurrentPlayerMode = PlayerMode.Build;
                     break;
                 case PlayerMode.Paste:
                     //从记录粘贴到游戏中
-                    PasteCubes(ItemManager.SelectItem, SetCubeManager.setPos);
+                    PasteCubes(QuickItemManager.SelectItem, SetCubeManager.setPos);
                     CurrentPlayerMode = PlayerMode.Build;
                     break;
                 default:
@@ -132,9 +132,14 @@ public partial class WorldManager : MonoBehaviour
         {
             return;
         }
-        CreatCube(ItemManager.SelectItem, SetCubeManager.setPos);
+        //为虚无，直接跳过
+        if (QuickItemManager.SelectItem.ItemID==0)
+        {
+            return;
+        }
+        CreatCube(QuickItemManager.SelectItem, SetCubeManager.setPos);
     }
-    public static void CreatCube(GameItem gameItem, Vector3 pos)
+    public static void CreatCube(ItemData gameItem, Vector3 pos)
     {
         //根据方块的标签数据判断对应的预制体
         var tragetPrefab = cubePrefabs.FirstOrDefault(cube => cube.name == gameItem.ItemTag);
@@ -142,11 +147,11 @@ public partial class WorldManager : MonoBehaviour
 
         var cube = Instantiate(tragetPrefab);
         var cubemanager = cube.AddComponent<GameCube>();
-        cubemanager.cubeData = gameItem.cubeData;
+        cubemanager.cubeData = gameItem.CubeData;
         cube.transform.position = pos;
         Instance.worldCubes.Add(cube);
     }
-    public static void FillCubes(GameItem gameItem, Vector3 startPos, Vector3 endPos)
+    public static void FillCubes(ItemData gameItem, Vector3 startPos, Vector3 endPos)
     {
         for (int i = (int)Mathf.Min(startPos.x, endPos.x); i < (int)Mathf.Max(startPos.x, endPos.x); i++)
         {
@@ -157,7 +162,7 @@ public partial class WorldManager : MonoBehaviour
             }
         }
     }
-    public static void CopyCubes(GameItem gameItem, Vector3 startPos, Vector3 endPos)
+    public static void CopyCubes(ItemData gameItem, Vector3 startPos, Vector3 endPos)
     {
         for (int i = (int)Mathf.Min(startPos.x, endPos.x); i < (int)Mathf.Max(startPos.x, endPos.x); i++)
         {
@@ -168,7 +173,7 @@ public partial class WorldManager : MonoBehaviour
             }
         }
     }
-    public static void PasteCubes(GameItem gameItem, Vector3 startPos)
+    public static void PasteCubes(ItemData gameItem, Vector3 startPos)
     {
         //for (int i = (int)Mathf.Min(startPos.x, endPos.x); i < (int)Mathf.Max(startPos.x, endPos.x); i++)
         //{

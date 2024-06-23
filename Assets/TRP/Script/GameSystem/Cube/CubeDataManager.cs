@@ -2,21 +2,30 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
+using System.Text;
 using UnityEngine;
 
 public class CubeDataManager : MonoBehaviour
 {
     static List<CubeData> cubeData = new();
     public static Dictionary<int, CubeData> cubeDataDict = new();
-    public static void LoadCubeData()
+    public static void Init()
     {
         cubeData.Clear();
         string filePath = @"Assets\TRP\Resources\CubeData.csv"; // 指定CSV文件的路径
-        var datas = File.ReadAllLines(filePath);
-
+        //var datas = File.ReadAllLines(filePath);
+        var datas = new List<string>();
+        using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        using (StreamReader reader = new StreamReader(stream, Encoding.GetEncoding("GB2312")))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                datas.Add(line);
+            }
+        }
         var titles = datas[0].Split(',').ToList();
-        for (int i = 1; i < datas.Length; i++)
+        for (int i = 1; i < datas.Count; i++)
         {
             string[] values = datas[i].Split(',');
             if (values.Length >= 7)
@@ -41,7 +50,7 @@ public class CubeDataManager : MonoBehaviour
     {
         if (!cubeDataDict.Any())
         {
-            LoadCubeData();
+            Init();
         }
         if (cubeDataDict.ContainsKey(ID))
         {
@@ -62,7 +71,7 @@ public class CubeDataManager : MonoBehaviour
         Debug.Log("预制体数量" + prefabs.Count);
         prefabs.ForEach(prefab =>
         {
-            Texture2D Tex = AssetPreview.GetAssetPreview(prefab);
+            Texture2D Tex = UnityEditor.AssetPreview.GetAssetPreview(prefab);
             if (Tex != null)
             {
                 byte[] bytes = Tex.EncodeToPNG();
